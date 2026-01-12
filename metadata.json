@@ -1,0 +1,5 @@
+{
+  "name": "GenVideo Studio",
+  "description": "A comprehensive AI video generation suite featuring Subject Animation (Kling) and Script-to-Stock generation (Gemini Veo), with a sequential stitching preview.",
+  "requestFramePermissions": []
+}

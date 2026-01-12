@@ -1,0 +1,92 @@
+[
+    {
+      "s3_key": "r1v1.mov",
+      "tags": ["home", "corporate", "lifestyle", "education"]
+    },
+    {
+      "s3_key": "r1v2.mov",
+      "tags": ["expressive", "reactions", "corporate"]
+    },
+    {
+      "s3_key": "r1v3.mov",
+      "tags": ["home", "corporate", "lifestyle", "education", "productivity", "consulting", "coding"]
+    },
+    {
+        "s3_key": "r1v12.mov",
+        "tags": ["home", "corporate", "lifestyle", "education"]
+      },
+    {
+        "s3_key":"r1v17.mov",
+        "tags":["offices", "marketting", "social_media", "corporate"]
+    },
+    {
+        "s3_key":"r1v40.mov",
+        "tags":["healthcare", "lifestyle", "consulting", "calm"]
+    },
+    {
+        "s3_key":"r1v47.mov",
+        "tags":["marketting", "corporate", "lifestyle", "productivity", "expressive"]
+    },
+    {
+        "s3_key":"r1v48.mov",
+        "tags":["marketting", "corporate", "lifestyle", "productivity", "expressive"]
+    },
+    {
+        "s3_key":"r1v49.mov",
+        "tags":["marketting", "corporate", "lifestyle", "productivity", "expressive"]
+    },
+    {
+        "s3_key":"r1v78.mov",
+        "tags":["finance", "corporate", "lifestyle"]
+    },
+    {
+        "s3_key":"r1v79.mov",
+        "tags":["finance", "corporate", "lifestyle"]
+    },
+    {
+        "s3_key":"r1v110.mov",
+        "tags":["education", "corporate", "media", "calm"]
+    },
+    {
+        "s3_key":"r1v112.mov",
+        "tags":["marketting", "corporate", "offices", "media"]
+    },
+    {
+        "s3_key":"r1v115.mov",
+        "tags":["trading", "media", "technology"]
+    },
+    {
+        "s3_key":"r1v117.mov",
+        "tags":["marketting", "corporate", "collaboration"]
+    },
+    {
+        "s3_key":"r1v119.mov",
+        "tags":["finance", "business"]
+    },
+    {
+        "s3_key":"r1v124.mov",
+        "tags":["social_media", "funny", "happy"]
+    },
+    {
+        "s3_key":"r1v125.mov",
+        "tags":["corporate", "business", "offices"]
+    },
+    {
+        "s3_key":"r1v119.mov",
+        "tags":["finance", "business"]
+    },
+    {
+        "s3_key":"r1v140.mov",
+        "tags":["emotional", "business", "workflow"]
+    },
+    {
+        "s3_key":"r1v141.mov",
+        "tags":["collaboration", "business", "corporate"]
+    },
+    {
+        "s3_key":"Coding_1.mov",
+        "tags":["technology"]
+    }
+
+  ]
+  

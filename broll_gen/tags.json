@@ -1,0 +1,52 @@
+[
+    { "id": "technology", "text": "software tools, digital platforms, cloud technology, SaaS, IT systems, modern software solutions, tech-driven workflows" },
+    { "id": "ai", "text": "AI artificial intelligence machine learning automation smart systems generative AI" },
+    { "id": "software_tools", "text": "software tools, applications, SaaS platforms, productivity software, cloud-based tools" },
+    { "id": "coding", "text": "software development, programming, writing code, debugging, developers working on computers" },
+    { "id": "data", "text": "data, analytics, dashboards, metrics, databases, data-driven decision making" },
+    { "id": "cloud", "text": "cloud platforms, cloud computing, remote servers, cloud software" },
+    { "id": "business", "text": "business operations, company strategy, professional decision making" },
+    { "id": "corporate", "text": "corporate environment, professional workplace, office culture, business teams" },
+    { "id": "productivity", "text": "work productivity, efficiency, improving workflows, team efficiency, getting work done faster" },
+    { "id": "workflow", "text": "workflow processes, task management, work pipelines, business processes" },
+    { "id": "collaboration", "text": "team collaboration, teamwork, working together, communication tools, remote collaboration" },
+    { "id": "consulting", "text": "business consulting, advisory services, professional guidance, strategy discussions" },
+    { "id": "marketing", "text": "marketing campaigns, brand promotion, digital marketing strategies" },
+    { "id": "commercial", "text": "commercial advertising content, promotional visuals, brand messaging" },
+    { "id": "media", "text": "media production, digital content, video and online publishing" },
+    { "id": "social_media", "text": "social media platforms, online sharing, digital communities, social content" },
+  
+    { "id": "education", "text": "education, learning, training, studying, knowledge sharing" },
+    { "id": "research", "text": "research, analysis, investigation, studying information" },
+    { "id": "finance", "text": "finance, financial systems, money management, banking, investments" },
+    { "id": "trading", "text": "financial trading, markets, stocks, investment activity" },
+    { "id": "security", "text": "digital security, cybersecurity, data protection, physical security systems" },
+    { "id": "healthcare", "text": "healthcare industry, medical services, hospitals, patient care" },
+  
+    { "id": "offices", "text": "office environment, workplace interiors, people working in offices" },
+    { "id": "home", "text": "home environment, indoor living spaces, remote work from home" },
+    { "id": "buildings", "text": "urban buildings, corporate buildings, city structures" },
+    { "id": "architecture", "text": "architectural design, modern buildings, interior and exterior spaces" },
+  
+    { "id": "cinematic", "text": "cinematic visuals, film-style shots, dramatic camera angles" },
+    { "id": "motion_graphics", "text": "motion graphics, animated visuals, digital animations" },
+    { "id": "timelapse", "text": "timelapse footage, sped-up scenes, fast-moving visuals" },
+    { "id": "background", "text": "background visuals, filler footage, abstract supporting visuals" },
+  
+    { "id": "energetic", "text": "energetic visuals, fast-paced scenes, high energy mood" },
+    { "id": "calm", "text": "calm visuals, relaxing scenes, peaceful atmosphere" },
+    { "id": "serious", "text": "serious tone, professional mood, focused visuals" },
+    { "id": "inspirational", "text": "inspirational tone, motivational visuals, positive messaging" },
+    { "id": "dramatic", "text": "dramatic visuals, intense scenes, emotional emphasis" },
+    { "id": "happy", "text": "happy mood, positive emotions, joyful visuals" },
+    { "id": "funny", "text": "funny content, humor, lighthearted visuals" },
+  
+    { "id": "gaming", "text": "gaming visuals, video games, interactive entertainment" },
+    { "id": "memes", "text": "internet memes, viral humor, online jokes" },
+    { "id": "reactions", "text": "reaction shots, expressive responses, people reacting on camera" },
+    { "id": "sports", "text": "sports activity, athletic movement, physical competition" },
+    { "id": "exercise", "text": "exercise, fitness activity, physical workouts" },
+    { "id": "leisure", "text": "leisure activities, relaxation, free time visuals" },
+    { "id": "scenery", "text": "natural scenery, landscapes, outdoor visuals" }
+  ]
+  
