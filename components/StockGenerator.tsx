@@ -88,7 +88,7 @@ export const StockGenerator: React.FC<StockGeneratorProps> = ({
       <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
         <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           <FileText className="w-5 h-5 text-green-400" />
-          Script to Stock Video
+          Script to B-Roll Video
         </h2>
 
         <textarea

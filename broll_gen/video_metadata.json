@@ -21,7 +21,7 @@
     },
     {
         "s3_key":"r1v40.mov",
-        "tags":["healthcare", "lifestyle", "consulting", "calm"]
+        "tags":["healthcare", "lifestyle", "consulting", "technology", "ai"]
     },
     {
         "s3_key":"r1v47.mov",
@@ -85,7 +85,7 @@
     },
     {
         "s3_key":"Coding_1.mov",
-        "tags":["technology"]
+        "tags":["ai", "technology"]
     }
 
   ]

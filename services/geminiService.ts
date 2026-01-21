@@ -1,141 +1,101 @@
-import { GoogleGenAI, Type } from "@google/genai";
 import { ScriptSegment } from "../types";
 
-const getApiKey = () => {
-  const key = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!key) {
-    throw new Error("Missing VITE_GEMINI_API_KEY in environment variables");
-  }
-  return key;
-};
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-// Helper to get the AI client
-const getAiClient = () => {
-  return new GoogleGenAI({ apiKey: getApiKey() });
-};
+if (!API_KEY) {
+  console.error("❌ VITE_GEMINI_API_KEY is NOT loaded");
+  throw new Error(
+    "VITE_GEMINI_API_KEY is missing. Restart Vite after adding it to .env"
+  );
+}
+
+console.log("✅ Gemini API Key loaded");
+
+const MODEL = "gemini-2.5-flash-lite";
+const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+
 
 const withRetry = async <T>(
-  operation: () => Promise<T>, 
-  retries = 3, 
-  baseDelay = 2000
+  fn: () => Promise<T>,
+  retries = 3
 ): Promise<T> => {
   for (let i = 0; i < retries; i++) {
     try {
-      return await operation();
-    } catch (error: any) {
-      // Check for rate limits
-      const isRateLimit = 
-        error.status === 429 || 
-        error.code === 429 || 
-        (error.message && error.message.includes("429")) ||
-        (error.message && error.message.includes("RESOURCE_EXHAUSTED"));
-
-      // Check for invalid key (Do not retry these)
-      if (isGeminiApiKeyError(error)) {
-        throw error;
-      }
-
-      if (isRateLimit && i < retries - 1) {
-        const delay = baseDelay * Math.pow(2, i);
-        console.warn(`Gemini 429 Rate Limit hit. Retrying in ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        continue;
-      }
-      throw error;
+      return await fn();
+    } catch (e) {
+      if (i === retries - 1) throw e;
+      await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
     }
   }
-  throw new Error("Max retries exceeded");
+  throw new Error("Retry failed");
 };
 
-export const isGeminiApiKeyError = (error: any): boolean => {
-  if (!error) return false;
+const callGemini = async (prompt: string) => {
+  console.log("API_KEY at call time:", API_KEY ? "EXISTS" : "UNDEFINED");
+  console.log("First 10 chars:", API_KEY?.slice(0, 10));
   
-  const msg = error.message || "";
-  const status = error.status || error.code;
+  const url = `${ENDPOINT}?key=${API_KEY}`;
+  console.log("Request URL:", url.replace(API_KEY || "", "***"));
 
-  if (status === 400 && (msg.includes("API key expired") || msg.includes("API_KEY_INVALID"))) {
-    return true;
-  }
-  
-  if (error.details) {
-    const detailsStr = JSON.stringify(error.details);
-    if (detailsStr.includes("API_KEY_INVALID") || detailsStr.includes("API key expired")) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
-// Enhance the prompt
-export const enhancePrompt = async (originalPrompt: string): Promise<string> => {
-  const ai = getAiClient();
-  
-  return withRetry(async () => {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: `Enhance the following video generation prompt to be more descriptive, cinematic, and detailed for an AI video generator. 
-      Keep it under 60 words. 
-      Original Prompt: "${originalPrompt}"
-      
-      Return ONLY the enhanced prompt, no explanations or additional text.`,
-    });
-    return response.text || originalPrompt;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [{ text: prompt }],
+        },
+      ],
+    }),
   });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+
+  return res.json();
 };
 
-// Split script and gen prompts
-export const splitScriptAndGeneratePrompts = async (fullScript: string): Promise<ScriptSegment[]> => {
-  const ai = getAiClient();
-  
-  return withRetry(async () => {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: `Analyze the following video script. 
-      1. Break the script into logical segments of approximately 2-3 lines or 1-2 sentences each.
-      2. For each segment, write a highly detailed visual prompt for a stock video clip (4-5 seconds) that matches the context.
-      3. Make the visual prompts cinematic and descriptive for AI video generation.
-      
-      Script:
-      """
-      ${fullScript}
-      """`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              text: { 
-                type: Type.STRING, 
-                description: "The segment of the script text" 
-              },
-              visualPrompt: { 
-                type: Type.STRING, 
-                description: "A detailed cinematic visual prompt for video generation" 
-              }
-            },
-            required: ["text", "visualPrompt"]
-          }
-        }
-      }
-    });
 
-    const data = JSON.parse(response.text || "[]");
-    
-    if (!Array.isArray(data)) {
-      throw new Error("Invalid response format from Gemini API");
+export const splitScriptAndGeneratePrompts = async (
+  fullScript: string
+): Promise<ScriptSegment[]> => {
+  return withRetry(async () => {
+    const json = await callGemini(`
+Split the following script into logical segments of 1–2 sentences.
+
+Respond ONLY with valid JSON.
+No markdown. No explanation.
+
+Format:
+[
+  { "text": "segment text" }
+]
+
+Script:
+"""
+${fullScript}
+"""
+    `);
+
+    const text =
+      json?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!text) {
+      throw new Error("Gemini returned empty response");
     }
-    
+
+    const data = JSON.parse(text);
+
+    if (!Array.isArray(data)) {
+      throw new Error("Invalid JSON format from Gemini");
+    }
+
     return data.map((item: any) => ({
       id: crypto.randomUUID(),
       text: item.text,
-      visualPrompt: item.visualPrompt
+      visualPrompt: "",
     }));
   });
 };
-
-// Utility exports
-export const ensureApiKeySelected = async () => true;
-export const requestApiKeySelection = async () => {};

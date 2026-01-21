@@ -6,12 +6,12 @@ with open("tags.json") as f:
 
 def get_matched_tags(script: str):
     raw = match_tags_with_gemini(script, TAGS)
+    # print("RAW:", raw)
     return filter_tags_no_types(raw)
 
-# 🔹 Keep this only for manual testing
 if __name__ == "__main__":
     script = """
-    An AI system detected breast cancer five years before it even fully formed.
+    In healthcare, AI is becoming a second set of eyes for doctors by helping medical teams catch what the human eye simply can’t.
     """
 
     matches = get_matched_tags(script)

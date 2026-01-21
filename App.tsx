@@ -20,8 +20,8 @@ const App: React.FC = () => {
   };
 
   const navItems = [
-    { id: AppSection.SUBJECT, label: 'Subject Video', icon: User },
-    { id: AppSection.STOCK, label: 'Stock Generator', icon: Layers },
+    { id: AppSection.SUBJECT, label: 'A-Roll Video', icon: User },
+    { id: AppSection.STOCK, label: 'B-Roll Video', icon: Layers },
     { id: AppSection.VOICE, label: 'Voice Generator', icon: Mic },
     { id: AppSection.STITCH, label: 'Stitch & Preview', icon: PlaySquare },
   ];
@@ -36,7 +36,7 @@ const App: React.FC = () => {
             <div className="bg-gradient-to-tr from-blue-600 to-purple-600 p-2 rounded-lg">
               <Clapperboard className="w-5 h-5 text-white" />
             </div>
-            GenVideo<span className="text-slate-500 font-light">Studio</span>
+            GenVideo<span className="text-slate-500 font-light"></span>
           </div>
           
           <nav className="flex gap-1 bg-slate-900/50 p-1 rounded-lg border border-slate-800 overflow-x-auto">
