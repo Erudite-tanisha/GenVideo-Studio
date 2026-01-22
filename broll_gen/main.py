@@ -1,21 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
 from match_tags import get_matched_tags
 from select_videos import select_best_video
-from video_index import VIDEOS
 from s3_utils import generate_presigned_video_url
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  
-    ],
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
-    allow_methods=["*"],       
-    allow_headers=["*"],       
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 class ScriptRequest(BaseModel):
@@ -24,35 +22,30 @@ class ScriptRequest(BaseModel):
 @app.post("/api/get-broll")
 def get_stock_video(req: ScriptRequest):
     try:
-        # 1️⃣ Extract tags from script
         matched_tags = get_matched_tags(req.script)
 
         if not matched_tags:
             return {"videoUrl": None, "matchedTags": [], "score": 0}
-
-        # 2️⃣ Pick best video
-        video = select_best_video(
-            videos=VIDEOS,
-            matched_tags=matched_tags,
-        )
+        
+        video = select_best_video(matched_tags)
 
         if not video:
-            return {"videoUrl": None, "matchedTags": [], "score": 0}
+            return {"videoUrl": None, "matchedTags": matched_tags, "score": 0}
         
+
         print("Selected video:", video)
         print("S3 key:", video.get("s3_key"))
-        
         url = generate_presigned_video_url(video["s3_key"])
 
         return {
             "videoUrl": url,
             "matchedTags": video["matched_tags"],
-            "score": video["score"]
+            "score": video["score"],
         }
 
     except Exception as e:
-        # Debug-safe response
         return {"error": str(e)}
+
 
 # import json
 # from match_tags import get_matched_tags

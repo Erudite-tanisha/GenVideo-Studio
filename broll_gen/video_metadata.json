@@ -12,6 +12,14 @@
       "tags": ["home", "corporate", "lifestyle", "education", "productivity", "consulting", "coding"]
     },
     {
+        "s3_key": "r1v5.mov",
+        "tags": ["healthcare"]
+      },
+      {
+        "s3_key": "r1v7.mov",
+        "tags": ["healthcare", "software_tools", "technology"]
+      },
+    {
         "s3_key": "r1v12.mov",
         "tags": ["home", "corporate", "lifestyle", "education"]
       },
@@ -20,8 +28,16 @@
         "tags":["offices", "marketting", "social_media", "corporate"]
     },
     {
+        "s3_key":"r1v34.mov",
+        "tags":["healthcare", "expressive", "emotional"]
+    },
+    {
         "s3_key":"r1v40.mov",
-        "tags":["healthcare", "lifestyle", "consulting", "technology", "ai"]
+        "tags":["healthcare", "lifestyle", "consulting", "technology"]
+    },
+    {
+        "s3_key":"r1v44.mov",
+        "tags":["cinematic", "coding", "productivity"]
     },
     {
         "s3_key":"r1v47.mov",
@@ -42,6 +58,18 @@
     {
         "s3_key":"r1v79.mov",
         "tags":["finance", "corporate", "lifestyle"]
+    },
+    {
+        "s3_key":"r1v97.mov",
+        "tags":["finance", "education"]
+    },
+    {
+        "s3_key":"r1v101a.mov",
+        "tags":["education", "coding", "research"]
+    },
+    {
+        "s3_key":"r1v102b.mov",
+        "tags":["technology", "coding", "gaming"]
     },
     {
         "s3_key":"r1v110.mov",
@@ -86,7 +114,18 @@
     {
         "s3_key":"Coding_1.mov",
         "tags":["ai", "technology"]
+    },
+    {
+        "s3_key":"Software_1.mov",
+        "tags":["software_tools", "coding"]
+    },
+    {
+        "s3_key":"Software_5.mov",
+        "tags":["software_tools", "creativity"]
+    },
+    {
+        "s3_key":"Software_10.mov",
+        "tags":["software_tools", "technology"]
     }
-
   ]
   

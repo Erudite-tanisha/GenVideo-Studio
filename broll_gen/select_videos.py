@@ -1,5 +1,6 @@
 from typing import List, Tuple, Dict, Optional
 from collections import defaultdict
+import database
 
 MatchedTag = Tuple[str, float]
 
@@ -29,19 +30,16 @@ def score_video(
             score += matched_tag_map[tag]
             matched.append(tag)
         else:
-            # Small penalty for irrelevant tags
             score -= 0.05
 
-    # Must have at least one match
     if not matched:
         return 0.0, []
 
-    # Bonus for multiple matches (diminishing returns)
     if len(matched) > 1:
         match_bonus = min(len(matched) * 0.10, 0.40)
         score += match_bonus
 
-    # Calculate precision: what % of video tags are relevant?
+
     precision = len(matched) / len(video_tags)
     
     # Penalty if video has too many irrelevant tags
@@ -60,16 +58,26 @@ def score_video(
 
 
 def select_best_video(
-    videos: List[Dict],
-    matched_tags: List[MatchedTag],
+    matched_tags: List[MatchedTag],  
     exclude_videos: Optional[List[str]] = None,
     min_tag_overlap: int = 1
 ) -> Optional[Dict]:
     """
-    Select the best matching video with diversity enforcement.
+    Select the best matching video from database.
+    Now fetches videos from PostgreSQL instead of JSON.
     """
     
-    if not videos or not matched_tags:
+    if not matched_tags:
+        return None
+
+    # Extract tag names for database query
+    tag_names = [tag for tag, _ in matched_tags]
+    
+    # Fetch matching videos from database
+    videos = database.get_videos_by_tags(tag_names)
+    
+    if not videos:
+        print("⚠️ No videos found in database matching these tags")
         return None
 
     exclude_videos = exclude_videos or []
@@ -77,17 +85,14 @@ def select_best_video(
     best_score = 0.0
     
     for video in videos:
-        video_key = video.get("s3_key")
-        video_tags = video.get("tags", [])
+        video_key = video["s3_key"]
+        video_tags = video["tags"]
         
-        # Skip if excluded or no tags
-        if not video_tags or video_key in exclude_videos:
+        if video_key in exclude_videos:
             continue
 
-        # Calculate score
         score, matched = score_video(video_tags, matched_tags, video_key)
 
-        # Skip if no overlap or below minimum
         if not matched or len(matched) < min_tag_overlap:
             continue
 
@@ -102,28 +107,77 @@ def select_best_video(
                 "usage_count": VIDEO_USAGE_TRACKER.get(video_key, 0)
             }
 
-    # Track usage
     if best_video:
         VIDEO_USAGE_TRACKER[best_video["s3_key"]] += 1
+        print(f"🎯 Selected: {best_video['s3_key']} (score: {best_video['score']})")
 
     return best_video
 
+# def select_best_video(
+#     # videos: List[Dict],
+#     matched_tags: List[MatchedTag],
+#     exclude_videos: Optional[List[str]] = None,
+#     min_tag_overlap: int = 1
+# ) -> Optional[Dict]:
+#     """
+#     Select the best matching video with diversity enforcement.
+#     """
+    
+#     if not videos or not matched_tags:
+#         return None
+
+#     exclude_videos = exclude_videos or []
+#     best_video = None
+#     best_score = 0.0
+    
+#     for video in videos:
+#         video_key = video.get("s3_key")
+#         video_tags = video.get("tags", [])
+        
+#         # Skip if excluded or no tags
+#         if not video_tags or video_key in exclude_videos:
+#             continue
+
+#         # Calculate score
+#         score, matched = score_video(video_tags, matched_tags, video_key)
+
+#         # Skip if no overlap or below minimum
+#         if not matched or len(matched) < min_tag_overlap:
+#             continue
+
+#         if score > best_score:
+#             best_score = score
+#             best_video = {
+#                 "s3_key": video_key,
+#                 "tags": video_tags,
+#                 "score": score,
+#                 "matched_tags": matched,
+#                 "precision": len(matched) / len(video_tags),
+#                 "usage_count": VIDEO_USAGE_TRACKER.get(video_key, 0)
+#             }
+
+#     # Track usage
+#     if best_video:
+#         VIDEO_USAGE_TRACKER[best_video["s3_key"]] += 1
+
+#     return best_video
+
+
 
 def select_multiple_videos(
-    videos: List[Dict],
-    matched_tags: List[MatchedTag],
+    matched_tags: List[MatchedTag], 
     count: int = 3,
     min_tag_overlap: int = 1
 ) -> List[Dict]:
     """
     Select multiple diverse videos for a script.
+    Now fetches from database.
     """
     selected = []
     exclude = []
     
     for _ in range(count):
         video = select_best_video(
-            videos, 
             matched_tags, 
             exclude_videos=exclude,
             min_tag_overlap=min_tag_overlap
@@ -138,23 +192,41 @@ def select_multiple_videos(
     return selected
 
 
+# def select_multiple_videos(
+#     videos: List[Dict],
+#     matched_tags: List[MatchedTag],
+#     count: int = 3,
+#     min_tag_overlap: int = 1
+# ) -> List[Dict]:
+#     """
+#     Select multiple diverse videos for a script.
+#     """
+#     selected = []
+#     exclude = []
+    
+#     for _ in range(count):
+#         video = select_best_video(
+#             videos, 
+#             matched_tags, 
+#             exclude_videos=exclude,
+#             min_tag_overlap=min_tag_overlap
+#         )
+        
+#         if not video:
+#             break
+            
+#         selected.append(video)
+#         exclude.append(video["s3_key"])
+    
+#     return selected
+
+
 def reset_usage_tracker():
     """Reset usage tracking (call at session start/end)."""
     VIDEO_USAGE_TRACKER.clear()
 
 
-# Example usage
 if __name__ == "__main__":
-    # Sample videos
-    videos = [
-        {"s3_key": "r1v1.mov", "tags": ["home", "corporate", "lifestyle", "education"]},
-        {"s3_key": "r1v3.mov", "tags": ["home", "corporate", "lifestyle", "education", "productivity", "consulting", "coding"]},
-        {"s3_key": "Coding_1.mov", "tags": ["ai", "technology"]},
-        {"s3_key": "r1v117.mov", "tags": ["marketing", "corporate", "collaboration"]},
-        {"s3_key": "r1v78.mov", "tags": ["finance", "corporate", "lifestyle"]},
-    ]
-    
-    # Tags from script analysis
     matched_tags = [
         ("ai", 0.85),
         ("coding", 0.80),
@@ -164,19 +236,18 @@ if __name__ == "__main__":
     print("Matched tags:", matched_tags)
     print("\n" + "="*60)
     
-    # Select best video
-    best = select_best_video(videos, matched_tags)
+    best = select_best_video(matched_tags)
     if best:
-        print(f"\nBest video: {best['s3_key']}")
-        print(f"Score: {best['score']}")
-        print(f"Matched: {best['matched_tags']}")
-        print(f"Precision: {best['precision']:.2%}")
+        print(f"\n🏆 Best video: {best['s3_key']}")
+        print(f"   Score: {best['score']}")
+        print(f"   Matched: {best['matched_tags']}")
+        print(f"   Precision: {best['precision']:.2%}")
     
     # Select multiple
     print("\n" + "="*60)
-    print("\nTop 3 videos:")
-    reset_usage_tracker()  # Reset for fair comparison
-    multiple = select_multiple_videos(videos, matched_tags, count=3)
+    print("\n📊 Top 3 videos:")
+    reset_usage_tracker()
+    multiple = select_multiple_videos(matched_tags, count=3)
     
     for i, vid in enumerate(multiple, 1):
         print(f"\n{i}. {vid['s3_key']}")
