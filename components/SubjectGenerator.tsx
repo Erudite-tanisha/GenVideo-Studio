@@ -230,14 +230,14 @@ export const SubjectGenerator: React.FC<SubjectGeneratorProps> = ({ onVideoGener
                        <span className="underline">Renew Key</span>
                      </button>
                   )}
-                  {/* <button 
-                    onClick={handleEnhancePrompt}
+                   <button 
+                    // onClick={handleEnhancePrompt}
                     disabled={isEnhancing || !prompt}
                     className="text-xs flex items-center gap-1 text-purple-400 hover:text-purple-300 disabled:opacity-50"
-                  > */}
+                  >
                     <Sparkles className="w-3 h-3" />
-                    Enhance (Gemini)
-                  {/* </button> */}
+                    Enhance Prompt
+                  </button>
                 </div>
               </div>
               <textarea

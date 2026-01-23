@@ -15,16 +15,15 @@ export const Stitcher: React.FC<StitcherProps> = ({ clips: initialClips, audioCl
   const [currentPlayingIndex, setCurrentPlayingIndex] = useState<number | null>(null);
   const [selectedAudioId, setSelectedAudioId] = useState<string>('');
   
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   // Playback State
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  // Stitching State
   const [isStitching, setIsStitching] = useState(false);
   const [stitchProgress, setStitchProgress] = useState(0);
 
-  // Lip Sync State
   const [syncVideoId, setSyncVideoId] = useState<string>('');
   const [syncAudioId, setSyncAudioId] = useState<string>('');
   const [isSyncing, setIsSyncing] = useState(false);
@@ -62,9 +61,11 @@ export const Stitcher: React.FC<StitcherProps> = ({ clips: initialClips, audioCl
 
   const startSequence = () => {
     if (playlist.length === 0) return;
+    setIsPreviewMode(false); 
     setCurrentPlayingIndex(0);
     setIsPlaying(true);
   };
+  
 
   const stopSequence = () => {
     setIsPlaying(false);
@@ -101,21 +102,30 @@ export const Stitcher: React.FC<StitcherProps> = ({ clips: initialClips, audioCl
   useEffect(() => {
     if (currentPlayingIndex !== null && videoRef.current) {
       const clip = playlist[currentPlayingIndex];
+      if (!clip || !clip.url) {
+        console.warn("Invalid clip at index", currentPlayingIndex, playlist);
+        return;
+      }
       videoRef.current.src = clip.url;
       videoRef.current.load();
-      // Reset time for new clip
+
       setCurrentTime(0); 
       
-      // Attempt play
-      const playPromise = videoRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => setIsPlaying(true))
-          .catch(e => {
-            console.error("Autoplay failed", e);
-            setIsPlaying(false);
-          });
+      if (!isPreviewMode) {
+        const playPromise = videoRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => setIsPlaying(true))
+            .catch(e => {
+              console.error("Autoplay failed", e);
+              setIsPlaying(false);
+            });
+        }
+      } else {
+        videoRef.current.pause();
+        setIsPlaying(false);
       }
+      
 
       // Handle Audio for the sequence start
       if (currentPlayingIndex === 0 && selectedAudioId && audioRef.current) {
@@ -205,7 +215,7 @@ export const Stitcher: React.FC<StitcherProps> = ({ clips: initialClips, audioCl
     stopSequence(); // Stop any current playback
   
     try {
-      // 🌟 Force canvas to 9:16 (1080x1920)
+      // Force canvas to 9:16 (1080x1920)
       const CANVAS_WIDTH = 1080;
       const CANVAS_HEIGHT = 1920;
   
@@ -402,7 +412,6 @@ export const Stitcher: React.FC<StitcherProps> = ({ clips: initialClips, audioCl
 
   return (
     <div className="w-full max-w-[1600px] px-6 mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-140px)]">
-      
       {/* Column 1: Playlist Editor */}
       <div className="lg:col-span-3 flex flex-col bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
         <div className="p-4 border-b border-slate-800 bg-slate-900 sticky top-0 z-10 space-y-4">
@@ -412,7 +421,7 @@ export const Stitcher: React.FC<StitcherProps> = ({ clips: initialClips, audioCl
                 <Film className="w-5 h-5 text-purple-400" />
                 Clip Sequence
               </h2>
-              <p className="text-xs text-slate-500 mt-1">Drag (conceptually) or use arrows to reorder.</p>
+              <p className="text-xs text-slate-500 mt-1">Use arrows to reorder.</p>
             </div>
             <div className="flex gap-2">
               <button 
@@ -461,11 +470,17 @@ export const Stitcher: React.FC<StitcherProps> = ({ clips: initialClips, audioCl
           ) : (
             playlist.map((clip, index) => (
               <div 
-                key={clip.id} 
-                className={`flex gap-3 bg-slate-800 p-2 rounded-lg border ${currentPlayingIndex === index ? 'border-purple-500 ring-1 ring-purple-500/50' : 'border-slate-700'}`}
+              key={`playlist-${clip.id}`}
+              onClick={() => {
+                setIsPreviewMode(true);
+                setCurrentPlayingIndex(index);
+              }}
+              className={`flex gap-3 bg-slate-800 p-2 rounded-lg border cursor-pointer
+                ${currentPlayingIndex === index ? 'border-purple-500 ring-1 ring-purple-500/50' : 'border-slate-700'}`}
               >
                 <div className="w-20 h-14 bg-black rounded overflow-hidden flex-shrink-0 relative">
-                  <video src={clip.url} className="w-full h-full object-cover" />
+
+                  <video src={clip.url} crossOrigin="anonymous" className="w-full h-full object-cover" />
                   <div className="absolute top-1 left-1 bg-black/70 text-white text-[10px] px-1 rounded">
                     #{index + 1}
                   </div>
@@ -532,7 +547,7 @@ export const Stitcher: React.FC<StitcherProps> = ({ clips: initialClips, audioCl
 
       {/* Column 2: Lip Sync Tool */}
       <div className="lg:col-span-4 bg-slate-900/50 rounded-xl border-2 border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)] p-5 flex flex-col overflow-y-auto relative">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 opacity-80"></div>
+        <div className="absolute top-0 left-0 w-full bg-gradient-to-r from-blue-500 to-purple-500 opacity-80"></div>
         
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-bold text-white flex items-center gap-2 text-lg">
@@ -619,8 +634,8 @@ export const Stitcher: React.FC<StitcherProps> = ({ clips: initialClips, audioCl
           {/* Hidden Audio Player for sync */}
           <audio ref={audioRef} className="hidden" />
 
-          {/* Video Container */}
-          <div className="flex-1 relative flex items-center justify-center bg-black">
+          {/* Video Container - Fixed height with proper aspect ratio handling */}
+          <div className="relative flex items-center justify-center bg-black" style={{ height: 'calc(100vh - 280px)', minHeight: '400px', maxHeight: '700px' }}>
             {isStitching && (
               <div className="absolute inset-0 z-20 bg-black/80 flex flex-col items-center justify-center text-white">
                 <Loader2 className="w-10 h-10 animate-spin text-blue-500 mb-4" />
@@ -633,7 +648,8 @@ export const Stitcher: React.FC<StitcherProps> = ({ clips: initialClips, audioCl
               <>
                 <video
                   ref={videoRef}
-                  className="w-full h-full object-contain"
+                  className="max-h-full max-w-full object-contain"
+                  style={{ aspectRatio: '9/16' }}
                   controls={false}
                   onEnded={handleVideoEnded}
                   onTimeUpdate={handleVideoTimeUpdate}
@@ -656,7 +672,7 @@ export const Stitcher: React.FC<StitcherProps> = ({ clips: initialClips, audioCl
                  <Film className="w-16 h-16 mx-auto mb-4 opacity-20" />
                  <p className="text-lg font-medium text-slate-400">Ready to Preview</p>
                  <p className="text-sm mt-2 max-w-xs mx-auto">
-                   Select 'Play Sequence' or click a clip to start.
+                  Select 'Play Sequence' or click a clip to start.
                  </p>
                </div>
             )}
@@ -720,7 +736,7 @@ export const Stitcher: React.FC<StitcherProps> = ({ clips: initialClips, audioCl
           <div>
              <h3 className="font-semibold text-white">Final Output</h3>
              <p className="text-xs text-slate-400">
-               Resolution: High Quality • Total Clips: {playlist.length} • Audio: {selectedAudioId ? 'Yes' : 'No'}
+              Resolution: High Quality • Total Clips: {playlist.length} • Audio: {selectedAudioId ? 'Yes' : 'No'}
              </p>
           </div>
           <Button 
@@ -728,8 +744,8 @@ export const Stitcher: React.FC<StitcherProps> = ({ clips: initialClips, audioCl
             onClick={handleExport}
             disabled={currentPlayingIndex === null}
           >
-             <Check className="w-4 h-4 mr-2" />
-             Export Final Video
+             <Check className="w-4 h-8 mr-2" />
+             Export Video
           </Button>
         </div>
       </div>

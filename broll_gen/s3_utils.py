@@ -21,7 +21,9 @@ def generate_presigned_video_url(s3_key: str, expires_in: int = 3600) -> str:
         "get_object",
         Params={
             "Bucket": BUCKET_NAME,
-            "Key": s3_key
+            "Key": s3_key,
+            "ResponseContentType": "video/mp4",
+            "ResponseCacheControl": "no-cache"
         },
         ExpiresIn=expires_in
     )
