@@ -23,7 +23,18 @@ export interface AudioClip {
   voiceName: string;
   voiceId: string;
   createdAt: number;
+  speed?:number;
 }
+
+// export interface VideoClip {
+//   id: string;
+//   url: string;
+//   prompt: string;
+//   type: "subject" | "stock" | "upload";
+//   duration?: number;
+//   createdAt: number;
+// }
+
 
 export interface ScriptSegment {
   id: string;

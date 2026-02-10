@@ -1,6 +1,7 @@
 from typing import List, Tuple, Dict, Optional
 from collections import defaultdict
 import database
+from s3_utils import generate_presigned_video_url
 
 MatchedTag = Tuple[str, float]
 
@@ -109,6 +110,8 @@ def select_best_video(
 
     if best_video:
         VIDEO_USAGE_TRACKER[best_video["s3_key"]] += 1
+        best_video["video_url"] = generate_presigned_video_url(best_video["s3_key"])
+        print(f"-- Presigned URL --{best_video["video_url"]}")
         print(f"🎯 Selected: {best_video['s3_key']} (score: {best_video['score']})")
 
     return best_video
@@ -228,9 +231,9 @@ def reset_usage_tracker():
 
 if __name__ == "__main__":
     matched_tags = [
-        ("ai", 0.85),
-        ("coding", 0.80),
-        ("productivity", 0.50)
+        ("expressive", 0.50),
+        ("technology", 0.45),
+        ("calm", 0.20)
     ]
     
     print("Matched tags:", matched_tags)
@@ -245,15 +248,15 @@ if __name__ == "__main__":
     
     # Select multiple
     print("\n" + "="*60)
-    print("\n📊 Top 3 videos:")
+    # print("\n📊 Top 3 videos:")
     reset_usage_tracker()
-    multiple = select_multiple_videos(matched_tags, count=3)
+    # multiple = select_multiple_videos(matched_tags, count=3)
     
-    for i, vid in enumerate(multiple, 1):
-        print(f"\n{i}. {vid['s3_key']}")
-        print(f"   Score: {vid['score']}")
-        print(f"   Matched: {vid['matched_tags']}")
-        print(f"   Precision: {vid['precision']:.2%}")
+    # for i, vid in enumerate(multiple, 1):
+    #     print(f"\n{i}. {vid['s3_key']}")
+    #     print(f"   Score: {vid['score']}")
+    #     print(f"   Matched: {vid['matched_tags']}")
+    #     print(f"   Precision: {vid['precision']:.2%}")
 
 
 # from typing import List, Tuple, Dict, Optional

@@ -1,21 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { Mic, Volume2, Music } from 'lucide-react';
-import { Button } from './Button';
-import { AudioClip } from '../types';
-import { getVoices, generateSpeech, Voice } from '../services/elevenLabsService';
+import React, { useState, useEffect } from "react";
+import { Mic, Volume2, Music } from "lucide-react";
+import { Button } from "./Button";
+import { AudioClip } from "../types";
+import {
+  getVoices,
+  generateSpeech,
+  Voice,
+} from "../services/elevenLabsService";
 
 interface VoiceGeneratorProps {
   onAudioGenerated: (audio: AudioClip) => void;
 }
 
-export const VoiceGenerator: React.FC<VoiceGeneratorProps> = ({ onAudioGenerated }) => {
-  const [text, setText] = useState('');
+export const VoiceGenerator: React.FC<VoiceGeneratorProps> = ({
+  onAudioGenerated,
+}) => {
+  const [text, setText] = useState("");
   const [voices, setVoices] = useState<Voice[]>([]);
-  const [selectedVoice, setSelectedVoice] = useState<string>('');
+  const [selectedVoice, setSelectedVoice] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoadingVoices, setIsLoadingVoices] = useState(false);
   const [generatedAudios, setGeneratedAudios] = useState<AudioClip[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [audioSpeed, setAudioSpeed] = useState(1.0);
 
   useEffect(() => {
     loadVoices();
@@ -29,7 +36,8 @@ export const VoiceGenerator: React.FC<VoiceGeneratorProps> = ({ onAudioGenerated
       setVoices(fetchedVoices);
       if (fetchedVoices.length > 0) {
         // Default to 'Adam' or first available
-        const defaultVoice = fetchedVoices.find(v => v.name === 'Adam') || fetchedVoices[0];
+        const defaultVoice =
+          fetchedVoices.find((v) => v.name === "Adam") || fetchedVoices[0];
         setSelectedVoice(defaultVoice.voice_id);
       }
     } catch (err: any) {
@@ -44,25 +52,26 @@ export const VoiceGenerator: React.FC<VoiceGeneratorProps> = ({ onAudioGenerated
       setError("Please enter text to generate speech.");
       return;
     }
-
+  
     setIsGenerating(true);
     setError(null);
     try {
-      const audioUrl = await generateSpeech(text, selectedVoice);
-      const voiceObj = voices.find(v => v.voice_id === selectedVoice);
-      
+      // Pass speed to generateSpeech
+      const audioUrl = await generateSpeech(text, selectedVoice, audioSpeed);  //  Add audioSpeed
+      const voiceObj = voices.find((v) => v.voice_id === selectedVoice);
+  
       const newClip: AudioClip = {
         id: crypto.randomUUID(),
         url: audioUrl,
         text: text,
-        voiceName: voiceObj?.name || 'Unknown Voice',
+        voiceName: voiceObj?.name || "Unknown Voice",
         voiceId: selectedVoice,
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        speed: audioSpeed,
       };
-
-      setGeneratedAudios(prev => [newClip, ...prev]);
+  
+      setGeneratedAudios((prev) => [newClip, ...prev]);
       onAudioGenerated(newClip);
-      
     } catch (err: any) {
       setError(err.message || "Generation failed.");
     } finally {
@@ -73,7 +82,6 @@ export const VoiceGenerator: React.FC<VoiceGeneratorProps> = ({ onAudioGenerated
   return (
     <div className="max-w-4xl mx-auto space-y-8 p-6 bg-slate-900 rounded-xl border border-slate-800">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        
         {/* Left: Inputs */}
         <div className="space-y-6">
           <div>
@@ -84,26 +92,46 @@ export const VoiceGenerator: React.FC<VoiceGeneratorProps> = ({ onAudioGenerated
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-400">Select Voice</label>
+                <label className="block text-sm font-medium text-slate-400">
+                  Select Voice
+                </label>
                 {isLoadingVoices ? (
                   <div className="h-10 bg-slate-800 rounded animate-pulse"></div>
                 ) : (
-                  <select 
+                  <select
                     value={selectedVoice}
                     onChange={(e) => setSelectedVoice(e.target.value)}
                     className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   >
-                    {voices.map(voice => (
+                    {voices.map((voice) => (
                       <option key={voice.voice_id} value={voice.voice_id}>
-                        {voice.name} {voice.category ? `(${voice.category})` : ''}
+                        {voice.name}{" "}
+                        {voice.category ? `(${voice.category})` : ""}
                       </option>
                     ))}
                   </select>
                 )}
               </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-400">
+                  Audio Speed
+                </label>
+                <select
+                  value={audioSpeed}
+                  onChange={(e) => setAudioSpeed(Number(e.target.value))}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
+                >
+                  <option value={0.75}>0.75x (Slow)</option>
+                  <option value={1.0}>1.0x (Normal)</option>
+                  <option value={1.25}>1.25x (Fast)</option>
+                  <option value={1.5}>1.5x (Very Fast)</option>
+                </select>
+              </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-400">Script</label>
+                <label className="block text-sm font-medium text-slate-400">
+                  Script
+                </label>
                 <textarea
                   value={text}
                   onChange={(e) => setText(e.target.value)}
@@ -118,8 +146,8 @@ export const VoiceGenerator: React.FC<VoiceGeneratorProps> = ({ onAudioGenerated
                 </div>
               )}
 
-              <Button 
-                onClick={handleGenerate} 
+              <Button
+                onClick={handleGenerate}
                 isLoading={isGenerating}
                 disabled={!selectedVoice || isLoadingVoices}
                 className="w-full"
@@ -137,7 +165,7 @@ export const VoiceGenerator: React.FC<VoiceGeneratorProps> = ({ onAudioGenerated
             <Music className="w-4 h-4" />
             Generated Audio Library
           </h3>
-          
+
           <div className="flex-1 space-y-3 overflow-y-auto custom-scrollbar max-h-[500px]">
             {generatedAudios.length === 0 ? (
               <div className="text-center text-slate-600 my-auto py-10">
@@ -146,17 +174,38 @@ export const VoiceGenerator: React.FC<VoiceGeneratorProps> = ({ onAudioGenerated
               </div>
             ) : (
               generatedAudios.map((clip) => (
-                <div key={clip.id} className="bg-slate-900 p-3 rounded-lg border border-slate-800 space-y-2">
+                <div
+                  key={clip.id}
+                  className="bg-slate-900 p-3 rounded-lg border border-slate-800 space-y-2"
+                >
                   <div className="flex justify-between items-start">
                     <div>
-                      <span className="text-xs font-bold text-purple-400 block">{clip.voiceName}</span>
-                      <p className="text-xs text-slate-300 line-clamp-2" title={clip.text}>"{clip.text}"</p>
+                      <span className="text-xs font-bold text-purple-400 block">
+                        {clip.voiceName}
+                      </span>
+                      <p
+                        className="text-xs text-slate-300 line-clamp-2"
+                        title={clip.text}
+                      >
+                        "{clip.text}"
+                      </p>
                     </div>
                     <span className="text-[10px] text-slate-600 whitespace-nowrap">
-                      {new Date(clip.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      {new Date(clip.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </span>
                   </div>
-                  <audio src={clip.url} controls className="w-full h-8" />
+                  <audio
+                    src={clip.url}
+                    controls
+                    className="w-full h-8"
+                    ref={(el) => {
+                      if (el) el.playbackRate = audioSpeed;
+                      // if (el) el.playbackRate = clip.speed;
+                    }}
+                  />
                 </div>
               ))
             )}

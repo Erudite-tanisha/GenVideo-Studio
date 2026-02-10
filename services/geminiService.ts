@@ -1,3 +1,4 @@
+import { stringify } from "querystring";
 import { ScriptSegment } from "../types";
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
@@ -10,10 +11,8 @@ if (!API_KEY) {
 }
 
 console.log("✅ Gemini API Key loaded");
-
 const MODEL = "gemini-2.5-flash-lite";
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
-
 
 const withRetry = async <T>(
   fn: () => Promise<T>,
@@ -32,7 +31,7 @@ const withRetry = async <T>(
 
 const callGemini = async (prompt: string) => {
   console.log("API_KEY at call time:", API_KEY ? "EXISTS" : "UNDEFINED");
-  console.log("First 10 chars:", API_KEY?.slice(0, 10));
+  // console.log("First 10 chars:", API_KEY?.slice(0, 10));
   
   const url = `${ENDPOINT}?key=${API_KEY}`;
   console.log("Request URL:", url.replace(API_KEY || "", "***"));
@@ -57,6 +56,40 @@ const callGemini = async (prompt: string) => {
   return res.json();
 };
 
+export const enhancePrompt = async (
+  prompt: string
+): Promise<string> => {
+  return withRetry(async () => {
+    const json = await callGemini(`
+You are a professional video prompt engineer. Your task is to enhance the given prompt to make it more descriptive, visual, and suitable for video generation.
+
+Guidelines:
+- Add vivid visual details (lighting, colors, camera angles, composition)
+- Specify mood and atmosphere
+- Include motion and action descriptions
+- Keep the core idea intact
+- Make it cinematic and engaging
+- Output should be 2-3 sentences max
+- Be specific but concise
+
+Original Prompt:
+"""
+${prompt}
+"""
+
+Enhanced Prompt (respond with ONLY the enhanced prompt, no explanations):
+    `);
+
+    const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!text) {
+      throw new Error("Gemini returned empty response");
+    }
+
+    // Return the enhanced prompt directly
+    return text.trim();
+  });
+};
 
 export const splitScriptAndGeneratePrompts = async (
   fullScript: string

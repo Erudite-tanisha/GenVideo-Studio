@@ -3,7 +3,7 @@ import { Upload, Sparkles, RefreshCw, Video, Settings2, AlertCircle, Copy, Clock
 import { VideoClip } from '../types';
 import { Button } from './Button';
 import { generateSubjectVideo } from '../services/falService';
-// import { enhancePrompt } from '../services/geminiService';
+import { enhancePrompt } from '../services/geminiService';
 
 interface SubjectGeneratorProps {
   onVideoGenerated: (video: VideoClip) => void;
@@ -39,24 +39,24 @@ export const SubjectGenerator: React.FC<SubjectGeneratorProps> = ({ onVideoGener
     }
   };
 
-  // const handleEnhancePrompt = async () => {
-  //   if (!prompt) return;
-  //   setIsEnhancing(true);
-  //   setPromptError(null);
-  //   try {
-  //     const enhanced = await enhancePrompt(prompt);
-  //     setPrompt(enhanced);
-  //   } catch (error: any) {
-  //     console.error("Failed to enhance prompt", error);
-  //     if ((error)) {
-  //       setPromptError("API Key Expired. Please renew.");
-  //     } else {
-  //       setPromptError("Failed to enhance prompt.");
-  //     }
-  //   } finally {
-  //     setIsEnhancing(false);
-  //   }
-  // };
+  const handleEnhancePrompt = async () => {
+    if (!prompt) return;
+    setIsEnhancing(true);
+    setPromptError(null);
+    try {
+      const enhanced = await enhancePrompt(prompt);
+      setPrompt(enhanced);
+    } catch (error: any) {
+      console.error("Failed to enhance prompt", error);
+      if ((error)) {
+        setPromptError("API Key Expired. Please renew.");
+      } else {
+        setPromptError("Failed to enhance prompt.");
+      }
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
 
   const handleRenewKey = async () => {
     if (window.aistudio?.openSelectKey) {
@@ -231,7 +231,7 @@ export const SubjectGenerator: React.FC<SubjectGeneratorProps> = ({ onVideoGener
                      </button>
                   )}
                    <button 
-                    // onClick={handleEnhancePrompt}
+                    onClick={handleEnhancePrompt}
                     disabled={isEnhancing || !prompt}
                     className="text-xs flex items-center gap-1 text-purple-400 hover:text-purple-300 disabled:opacity-50"
                   >

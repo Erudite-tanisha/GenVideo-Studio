@@ -15,7 +15,6 @@ DB_CONFIG = {
     "user": os.getenv("DB_USER", "tanishasaini"),
 }
 
-# Only add password if it exists
 if os.getenv("DB_PASSWORD"):
     DB_CONFIG["password"] = os.getenv("DB_PASSWORD")
 

@@ -260,7 +260,7 @@ Use 3-7 tags typically. Be selective and precise. Return ONLY the JSON, no other
                     import re
                     match = re.search(r'retry in (\d+\.?\d*)', error_message.lower())
                     if match:
-                        wait_time = float(match.group(1)) + 1  # Add 1s buffer
+                        wait_time = float(match.group(1)) + 1  
                     else:
                         wait_time = 60
                 else:
